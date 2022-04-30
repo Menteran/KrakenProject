@@ -1,0 +1,9 @@
+{
+	"name": "mxuadf",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "01ce6734-fd0f-4403-90d0-a3bd15a10f4c",
+		"tenantId": "c2581f89-ca10-4132-9bc5-00bf8c012eb5"
+	}
+}
