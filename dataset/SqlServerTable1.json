@@ -5,49 +5,23 @@
 			"referenceName": "OnPremSQL",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"SSchemaName": {
+				"type": "string"
+			},
+			"STableName": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "SqlServerTable",
-		"schema": [
-			{
-				"name": "au_id",
-				"type": "varchar"
-			},
-			{
-				"name": "au_lname",
-				"type": "varchar"
-			},
-			{
-				"name": "au_fname",
-				"type": "varchar"
-			},
-			{
-				"name": "phone",
-				"type": "char"
-			},
-			{
-				"name": "address",
-				"type": "varchar"
-			},
-			{
-				"name": "city",
-				"type": "varchar"
-			},
-			{
-				"name": "state",
-				"type": "char"
-			},
-			{
-				"name": "zip",
-				"type": "char"
-			},
-			{
-				"name": "contract",
-				"type": "bit"
-			}
-		],
+		"schema": [],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "authors"
+			"table": {
+				"value": "@dataset().STableName",
+				"type": "Expression"
+			}
 		}
 	}
 }

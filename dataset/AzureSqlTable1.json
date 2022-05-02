@@ -5,6 +5,14 @@
 			"referenceName": "AzureSqlDatabase1",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"ASchemaName": {
+				"type": "string"
+			},
+			"ATableName": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
@@ -48,7 +56,10 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "authors"
+			"table": {
+				"value": "@dataset().ATableName",
+				"type": "Expression"
+			}
 		}
 	}
 }
