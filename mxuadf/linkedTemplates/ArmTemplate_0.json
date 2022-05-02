@@ -29,6 +29,39 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Web_RestAPI')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Web1",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://dummy.restapiexample.com/api/v1/employees",
+							"method": "GET",
+							"headers": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabase1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -175,120 +208,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/OnPremSQL')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/IterateAndCopySQLTables')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "ForEach1",
-						"type": "ForEach",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@pipeline().parameters.PTableName",
-								"type": "Expression"
-							},
-							"isSequential": false,
-							"activities": [
-								{
-									"name": "Copy data1",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [
-										{
-											"name": "Source",
-											"value": "dbo.@{item()}"
-										},
-										{
-											"name": "Destination",
-											"value": "dbo.@{item()}"
-										}
-									],
-									"typeProperties": {
-										"source": {
-											"type": "SqlServerSource",
-											"queryTimeout": "02:00:00",
-											"partitionOption": "None"
-										},
-										"sink": {
-											"type": "AzureSqlSink",
-											"writeBehavior": "insert",
-											"sqlWriterUseTableLock": false,
-											"tableOption": "autoCreate",
-											"disableMetricsCollection": false
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "SqlServerTable1",
-											"type": "DatasetReference",
-											"parameters": {
-												"SSchemaName": "dbo",
-												"STableName": {
-													"value": "@item()",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "AzureSqlTable1",
-											"type": "DatasetReference",
-											"parameters": {
-												"ASchemaName": "dbo",
-												"ATableName": {
-													"value": "@item()",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"parameters": {
-					"PTableName": {
-						"type": "array",
-						"defaultValue": [
-							"discounts",
-							"employee",
-							"jobs"
-						]
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SqlServerTable1')]",
-				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]"
 			]
 		}
 	]
