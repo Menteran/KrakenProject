@@ -29,95 +29,22 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/GetTableListAndTriggerCopyData')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "LookupTableList",
-						"description": "Retrieve the table list from my database",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"sqlReaderQuery": {
-									"value": "SELECT TABLE_SCHEMA, TABLE_NAME FROM information_schema.TABLES WHERE TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = 'SalesLT' and TABLE_NAME <> 'ProductModel'",
-									"type": "Expression"
-								},
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "SqlServerTable1",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						}
-					},
-					{
-						"name": "TriggerCopy",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "LookupTableList",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "IterateAndCopySQLTables",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": false,
-							"parameters": {
-								"TableList": {
-									"value": "@activity('LookupTableList').output.value",
-									"type": "Expression"
-								}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SqlServerTable1')]",
-				"[concat(variables('factoryId'), '/pipelines/IterateAndCopySQLTables')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/IterateAndCopySQLTables')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "IterateSQLTables",
+						"name": "ForEach1",
 						"type": "ForEach",
 						"dependsOn": [],
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@pipeline().parameters.TableList",
+								"value": "@pipeline().parameters.PTableName",
 								"type": "Expression"
 							},
+							"isSequential": true,
 							"activities": [
 								{
 									"name": "Copy data1",
@@ -130,23 +57,24 @@
 										"secureOutput": false,
 										"secureInput": false
 									},
-									"userProperties": [],
+									"userProperties": [
+										{
+											"name": "Source",
+											"value": "dbo.@{item()}"
+										},
+										{
+											"name": "Destination",
+											"value": "dbo.@{item()}"
+										}
+									],
 									"typeProperties": {
 										"source": {
 											"type": "SqlServerSource",
-											"sqlReaderQuery": {
-												"value": "SELECT * FROM [@{item().TABLE_SCHEMA}].[@{item().TABLE_NAME}]",
-												"type": "Expression"
-											},
 											"queryTimeout": "02:00:00",
 											"partitionOption": "None"
 										},
 										"sink": {
 											"type": "AzureSqlSink",
-											"preCopyScript": {
-												"value": "IF EXISTS (SELECT * FROM [@{item().TABLE_SCHEMA}].[@{item().TABLE_NAME}]) TRUNCATE TABLE [@{item().TABLE_SCHEMA}].[@{item().TABLE_NAME}]",
-												"type": "Expression"
-											},
 											"writeBehavior": "insert",
 											"sqlWriterUseTableLock": false,
 											"tableOption": "autoCreate",
@@ -166,7 +94,13 @@
 										{
 											"referenceName": "SqlServerTable1",
 											"type": "DatasetReference",
-											"parameters": {}
+											"parameters": {
+												"SSchemaName": "dbo",
+												"STableName": {
+													"value": "@item()",
+													"type": "Expression"
+												}
+											}
 										}
 									],
 									"outputs": [
@@ -174,12 +108,9 @@
 											"referenceName": "AzureSqlTable1",
 											"type": "DatasetReference",
 											"parameters": {
-												"AZTableName": {
-													"value": "@item().TABLE_NAME",
-													"type": "Expression"
-												},
-												"AZSchema": {
-													"value": "@item().TABLE_SCHEMA",
+												"ASchemaName": "dbo",
+												"ATableName": {
+													"value": "@item()",
 													"type": "Expression"
 												}
 											}
@@ -195,8 +126,13 @@
 					"cancelAfter": {}
 				},
 				"parameters": {
-					"TableList": {
-						"type": "array"
+					"PTableName": {
+						"type": "array",
+						"defaultValue": [
+							"discounts",
+							"employee",
+							"jobs"
+						]
 					}
 				},
 				"annotations": []
@@ -216,23 +152,58 @@
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"AZTableName": {
+					"ASchemaName": {
 						"type": "string"
 					},
-					"AZSchema": {
+					"ATableName": {
 						"type": "string"
 					}
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": {
-						"value": "@dataset().AZSchema",
-						"type": "Expression"
+				"schema": [
+					{
+						"name": "au_id",
+						"type": "int",
+						"precision": 10
 					},
+					{
+						"name": "au_lname",
+						"type": "varchar"
+					},
+					{
+						"name": "au_fname",
+						"type": "varchar"
+					},
+					{
+						"name": "phone",
+						"type": "char"
+					},
+					{
+						"name": "address",
+						"type": "varchar"
+					},
+					{
+						"name": "city",
+						"type": "varchar"
+					},
+					{
+						"name": "state",
+						"type": "char"
+					},
+					{
+						"name": "zip",
+						"type": "char"
+					},
+					{
+						"name": "contract",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
 					"table": {
-						"value": "@dataset().AZTableName",
+						"value": "@dataset().ATableName",
 						"type": "Expression"
 					}
 				}
@@ -250,12 +221,23 @@
 					"referenceName": "OnPremSQL",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"SSchemaName": {
+						"type": "string"
+					},
+					"STableName": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "SqlServerTable",
 				"schema": [],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "dummyName"
+					"table": {
+						"value": "@dataset().STableName",
+						"type": "Expression"
+					}
 				}
 			},
 			"dependsOn": [
@@ -308,6 +290,37 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger1')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "IterateAndCopySQLTables",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2022-05-01T23:15:00",
+						"timeZone": "Pacific Standard Time",
+						"schedule": {}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/IterateAndCopySQLTables')]"
+			]
 		}
 	]
 }
