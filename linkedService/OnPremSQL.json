@@ -1,0 +1,17 @@
+{
+	"name": "OnPremSQL",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "integrated security=True;data source=WIN-5AOG0U9AR6O;initial catalog=pubs",
+			"userName": "Administrator",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIzNzI2NzM0Yy00Njc3LTQwMGYtOTA1Mi1kMDM5YjA3MzljZTkiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "OnPremintegrationRuntime1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
