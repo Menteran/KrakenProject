@@ -7,7 +7,45 @@
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
-		"schema": [],
+		"schema": [
+			{
+				"name": "au_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "au_lname",
+				"type": "varchar"
+			},
+			{
+				"name": "au_fname",
+				"type": "varchar"
+			},
+			{
+				"name": "phone",
+				"type": "char"
+			},
+			{
+				"name": "address",
+				"type": "varchar"
+			},
+			{
+				"name": "city",
+				"type": "varchar"
+			},
+			{
+				"name": "state",
+				"type": "char"
+			},
+			{
+				"name": "zip",
+				"type": "char"
+			},
+			{
+				"name": "contract",
+				"type": "bit"
+			}
+		],
 		"typeProperties": {
 			"schema": "dbo",
 			"table": "authors"
