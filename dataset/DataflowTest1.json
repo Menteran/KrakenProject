@@ -1,0 +1,16 @@
+{
+	"name": "DataflowTest1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "2ndAzure",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Name1"
+		}
+	}
+}
