@@ -1,22 +1,22 @@
 {
-	"name": "SqlServerPubs",
+	"name": "AzureTestDB",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "OnPremSQL",
+			"referenceName": "2ndAzure",
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"STableName": {
+			"AzureTestDB": {
 				"type": "string"
 			}
 		},
 		"annotations": [],
-		"type": "SqlServerTable",
+		"type": "AzureSqlTable",
 		"schema": [],
 		"typeProperties": {
 			"schema": "dbo",
 			"table": {
-				"value": "@dataset().STableName",
+				"value": "@dataset().AzureTestDB",
 				"type": "Expression"
 			}
 		}

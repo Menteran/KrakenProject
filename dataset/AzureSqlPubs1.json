@@ -1,14 +1,11 @@
 {
-	"name": "AzureSqlTable1",
+	"name": "AzureSqlPubs1",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureSqlDatabase1",
+			"referenceName": "AzureSql",
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"ASchemaName": {
-				"type": "string"
-			},
 			"ATableName": {
 				"type": "string"
 			}

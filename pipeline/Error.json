@@ -1,0 +1,122 @@
+{
+	"name": "Error",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(item().abc,2)",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Set variable1",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "PipelineRunid",
+											"value": "POST https://management.azure.com/subscriptions/039b1875-f3db-43d9-8bbe-ecb49ebd8de2/resourceGroups/xzygroup/providers/Microsoft.DataFactory/factories/mxuadf/pipelineruns/24f93745-5ff7-494f-8f1c-43b16b43d7d5/cancel?api-version=2018-06-01\n"
+										}
+									},
+									{
+										"name": "Web1",
+										"type": "WebActivity",
+										"dependsOn": [
+											{
+												"activity": "Set variable1",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "7.00:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"url": {
+												"value": "@variables('PipelineRunid')",
+												"type": "Expression"
+											},
+											"method": "POST",
+											"body": {
+												"message": "Cancelling the pipeline"
+											},
+											"authentication": {
+												"type": "MSI",
+												"resource": "https://management.azure.com"
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "select 1 as abc from testfail\nunion all\nselect 2 as abc from testfail\nunion all\nselect 3 as abc from testfail",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "SQLTestDB",
+						"type": "DatasetReference",
+						"parameters": {
+							"TestName": "testfail"
+						}
+					},
+					"firstRowOnly": false
+				}
+			}
+		],
+		"variables": {
+			"PipelineRunid": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}

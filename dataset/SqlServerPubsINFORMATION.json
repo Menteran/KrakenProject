@@ -1,24 +1,16 @@
 {
-	"name": "SqlServerPubs",
+	"name": "SqlServerPubsINFORMATION",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "OnPremSQL",
 			"type": "LinkedServiceReference"
 		},
-		"parameters": {
-			"STableName": {
-				"type": "string"
-			}
-		},
 		"annotations": [],
 		"type": "SqlServerTable",
 		"schema": [],
 		"typeProperties": {
-			"schema": "dbo",
-			"table": {
-				"value": "@dataset().STableName",
-				"type": "Expression"
-			}
+			"schema": "INFORMATION_SCHEMA",
+			"table": "TABLES"
 		}
 	}
 }
