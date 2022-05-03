@@ -39,6 +39,17 @@
 			"type": "string",
 			"defaultValue": "Administrator"
 		},
+		"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"type": "string",
+			"defaultValue": "mxuslqserver.database.windows.net"
+		},
+		"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"type": "string",
+			"defaultValue": "menteran"
+		},
+		"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+			"type": "secureString"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -83,6 +94,15 @@
 					},
 					"OnPremSQL_password": {
 						"value": "[parameters('OnPremSQL_password')]"
+					},
+					"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+						"value": "[parameters('LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint')]"
+					},
+					"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+						"value": "[parameters('LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName')]"
+					},
+					"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+						"value": "[parameters('LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword')]"
 					},
 					"2ndSQL_properties_typeProperties_userName": {
 						"value": "[parameters('2ndSQL_properties_typeProperties_userName')]"

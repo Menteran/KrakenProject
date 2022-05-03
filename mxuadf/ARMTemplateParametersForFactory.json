@@ -28,6 +28,15 @@
 		},
 		"OnPremSQL_properties_typeProperties_userName": {
 			"value": "Administrator"
+		},
+		"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogServerEndpoint": {
+			"value": "mxuslqserver.database.windows.net"
+		},
+		"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminUserName": {
+			"value": "menteran"
+		},
+		"LiftShift_properties_typeProperties_ssisProperties_catalogInfo_catalogAdminPassword": {
+			"value": ""
 		}
 	}
 }
