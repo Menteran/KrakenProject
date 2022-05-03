@@ -5,7 +5,16 @@
 		"factoryName": {
 			"value": "mxuadf"
 		},
-		"AzureSqlDatabase1_connectionString": {
+		"2ndAzure_connectionString": {
+			"value": ""
+		},
+		"2ndSQL_connectionString": {
+			"value": ""
+		},
+		"2ndSQL_password": {
+			"value": ""
+		},
+		"AzureSql_connectionString": {
 			"value": ""
 		},
 		"OnPremSQL_connectionString": {
@@ -13,6 +22,9 @@
 		},
 		"OnPremSQL_password": {
 			"value": ""
+		},
+		"2ndSQL_properties_typeProperties_userName": {
+			"value": "Administrator"
 		},
 		"OnPremSQL_properties_typeProperties_userName": {
 			"value": "Administrator"

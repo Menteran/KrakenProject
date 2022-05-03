@@ -7,9 +7,21 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mxuadf"
 		},
-		"AzureSqlDatabase1_connectionString": {
+		"2ndAzure_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabase1'"
+			"metadata": "Secure string for 'connectionString' of '2ndAzure'"
+		},
+		"2ndSQL_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of '2ndSQL'"
+		},
+		"2ndSQL_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of '2ndSQL'"
+		},
+		"AzureSql_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureSql'"
 		},
 		"OnPremSQL_connectionString": {
 			"type": "secureString",
@@ -18,6 +30,10 @@
 		"OnPremSQL_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'OnPremSQL'"
+		},
+		"2ndSQL_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "Administrator"
 		},
 		"OnPremSQL_properties_typeProperties_userName": {
 			"type": "string",
@@ -50,14 +66,26 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"AzureSqlDatabase1_connectionString": {
-						"value": "[parameters('AzureSqlDatabase1_connectionString')]"
+					"2ndAzure_connectionString": {
+						"value": "[parameters('2ndAzure_connectionString')]"
+					},
+					"AzureSql_connectionString": {
+						"value": "[parameters('AzureSql_connectionString')]"
+					},
+					"2ndSQL_connectionString": {
+						"value": "[parameters('2ndSQL_connectionString')]"
+					},
+					"2ndSQL_password": {
+						"value": "[parameters('2ndSQL_password')]"
 					},
 					"OnPremSQL_connectionString": {
 						"value": "[parameters('OnPremSQL_connectionString')]"
 					},
 					"OnPremSQL_password": {
 						"value": "[parameters('OnPremSQL_password')]"
+					},
+					"2ndSQL_properties_typeProperties_userName": {
+						"value": "[parameters('2ndSQL_properties_typeProperties_userName')]"
 					},
 					"OnPremSQL_properties_typeProperties_userName": {
 						"value": "[parameters('OnPremSQL_properties_typeProperties_userName')]"

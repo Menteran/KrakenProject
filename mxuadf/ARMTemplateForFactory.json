@@ -7,9 +7,21 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "mxuadf"
 		},
-		"AzureSqlDatabase1_connectionString": {
+		"2ndAzure_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabase1'"
+			"metadata": "Secure string for 'connectionString' of '2ndAzure'"
+		},
+		"2ndSQL_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of '2ndSQL'"
+		},
+		"2ndSQL_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of '2ndSQL'"
+		},
+		"AzureSql_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureSql'"
 		},
 		"OnPremSQL_connectionString": {
 			"type": "secureString",
@@ -18,6 +30,10 @@
 		"OnPremSQL_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'OnPremSQL'"
+		},
+		"2ndSQL_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "Administrator"
 		},
 		"OnPremSQL_properties_typeProperties_userName": {
 			"type": "string",
@@ -29,14 +45,95 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/Web_RestAPI')]",
+			"name": "[concat(parameters('factoryName'), '/Error')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Web1",
-						"type": "WebActivity",
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup1').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "If Condition1",
+									"type": "IfCondition",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"expression": {
+											"value": "@equals(item().abc,2)",
+											"type": "Expression"
+										},
+										"ifTrueActivities": [
+											{
+												"name": "Set variable1",
+												"type": "SetVariable",
+												"dependsOn": [],
+												"userProperties": [],
+												"typeProperties": {
+													"variableName": "PipelineRunid",
+													"value": "POST https://management.azure.com/subscriptions/039b1875-f3db-43d9-8bbe-ecb49ebd8de2/resourceGroups/xzygroup/providers/Microsoft.DataFactory/factories/mxuadf/pipelineruns/24f93745-5ff7-494f-8f1c-43b16b43d7d5/cancel?api-version=2018-06-01\n"
+												}
+											},
+											{
+												"name": "Web1",
+												"type": "WebActivity",
+												"dependsOn": [
+													{
+														"activity": "Set variable1",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "7.00:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"url": {
+														"value": "@variables('PipelineRunid')",
+														"type": "Expression"
+													},
+													"method": "POST",
+													"headers": {},
+													"body": {
+														"message": "Cancelling the pipeline"
+													},
+													"authentication": {
+														"type": "MSI",
+														"resource": "https://management.azure.com"
+													}
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "7.00:00:00",
@@ -47,16 +144,151 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"url": "https://dummy.restapiexample.com/api/v1/create",
-							"method": "POST",
-							"headers": {
-								"Content-type": "application\\json"
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "select 1 as abc from testfail\nunion all\nselect 2 as abc from testfail\nunion all\nselect 3 as abc from testfail",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
 							},
-							"body": {
-								"name": "test",
-								"salary": "123",
-								"age": "23"
+							"dataset": {
+								"referenceName": "SQLTestDB",
+								"type": "DatasetReference",
+								"parameters": {
+									"TestName": "testfail"
+								}
+							},
+							"firstRowOnly": false
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"PipelineRunid": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SQLTestDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LookUp')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "select table_name from INFORMATION_SCHEMA.TABLES",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "SqlServerPubsINFORMATION",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup1').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "AzureSqlSink",
+											"writeBehavior": "insert",
+											"sqlWriterUseTableLock": false,
+											"tableOption": "autoCreate",
+											"disableMetricsCollection": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "SqlServerPubs",
+											"type": "DatasetReference",
+											"parameters": {
+												"STableName": {
+													"value": "@item().table_name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "AzureSqlPubs1",
+											"type": "DatasetReference",
+											"parameters": {
+												"ATableName": {
+													"value": "@item().table_name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
 						}
 					}
 				],
@@ -66,21 +298,22 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SqlServerPubsINFORMATION')]",
+				"[concat(variables('factoryId'), '/datasets/SqlServerPubs')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlPubs1')]"
+			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
+			"name": "[concat(parameters('factoryName'), '/AzureSqlPubs1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase1",
+					"referenceName": "AzureSql",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"ASchemaName": {
-						"type": "string"
-					},
 					"ATableName": {
 						"type": "string"
 					}
@@ -135,11 +368,69 @@
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureSql')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/SqlServerTable1')]",
+			"name": "[concat(parameters('factoryName'), '/AzureTestDB')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "2ndAzure",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"AzureTestDB": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().AzureTestDB",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/2ndAzure')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SQLTestDB')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "2ndSQL",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TestName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().TestName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/2ndSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerPubs')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -148,9 +439,6 @@
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"SSchemaName": {
-						"type": "string"
-					},
 					"STableName": {
 						"type": "string"
 					}
@@ -171,14 +459,72 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabase1')]",
+			"name": "[concat(parameters('factoryName'), '/SqlServerPubsINFORMATION')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "OnPremSQL",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "INFORMATION_SCHEMA",
+					"table": "TABLES"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/OnPremSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/2ndAzure')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
-					"connectionString": "[parameters('AzureSqlDatabase1_connectionString')]"
+					"connectionString": "[parameters('2ndAzure_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/2ndSQL')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('2ndSQL_connectionString')]",
+					"userName": "[parameters('2ndSQL_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('2ndSQL_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "OnPremintegrationRuntime1",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/OnPremintegrationRuntime1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSql')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureSql_connectionString')]"
 				}
 			},
 			"dependsOn": []
@@ -199,16 +545,36 @@
 					}
 				},
 				"connectVia": {
-					"referenceName": "OnPremRuntime1",
+					"referenceName": "OnPremintegrationRuntime1",
 					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/OnPremRuntime1')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/OnPremintegrationRuntime1')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/OnPremRuntime1')]",
+			"name": "[concat(parameters('factoryName'), '/trigger1')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2022-05-02T19:27:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OnPremintegrationRuntime1')]",
 			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
 			"properties": {
